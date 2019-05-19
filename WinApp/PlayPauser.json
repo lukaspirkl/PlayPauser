@@ -1,0 +1,6 @@
+﻿{
+  "ServerPort": 8181,
+  "ClientAddress": "http://192.168.0.3:8181",
+  "IsHttpSender": false,
+  "IsHttpReveiver": true
+}

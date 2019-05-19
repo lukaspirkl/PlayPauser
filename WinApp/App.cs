@@ -1,8 +1,11 @@
-﻿using Fleck;
-using HotKeyMapper;
+﻿using HotKeyMapper;
+using Microsoft.AspNetCore.Hosting;
+using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
+using System.Net.Http;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
 namespace PlayPauser
@@ -10,46 +13,71 @@ namespace PlayPauser
     [System.ComponentModel.DesignerCategory("")] // Disable Visual Studio form designer
     public partial class App : Form
     {
+        [DllImport("Shcore.dll")]
+        static extern int SetProcessDpiAwareness(int PROCESS_DPI_AWARENESS);
+
+        // According to https://msdn.microsoft.com/en-us/library/windows/desktop/dn280512(v=vs.85).aspx
+        private enum DpiAwareness
+        {
+            None = 0,
+            SystemAware = 1,
+            PerMonitorAware = 2
+        }
+
         [STAThread]
         public static void Main()
         {
+            Options = JsonConvert.DeserializeObject<Options>(File.ReadAllText(Path.Combine(Path.GetDirectoryName(typeof(App).Assembly.Location), "PlayPauser.json")));
+
+            // https://stackoverflow.com/questions/49012233/winforms-4k-and-1080p-scaling-high-dpi
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+            SetProcessDpiAwareness((int)DpiAwareness.PerMonitorAware);
+
             Application.Run(new App());
         }
 
         private NotifyIcon trayIcon;
         private ContextMenu trayMenu;
         private KeyboardHook hook;
-        private WebSocketServer server;
-        private List<IWebSocketConnection> allSockets = new List<IWebSocketConnection>();
+        private IWebHost webHost;
+        private HttpClient httpClient = new HttpClient();
+        //Form options = new OptionsForm();
+
+        public static Options Options;
 
         public App()
         {
-            server = new WebSocketServer("ws://127.0.0.1:8181")
-            {
-                RestartAfterListenError = true
-            };
-            server.Start(socket =>
-            {
-                socket.OnOpen = () =>
+            webHost = new WebHostBuilder()
+                .UseKestrel(o =>
                 {
-                    Console.WriteLine("Open!");
-                    allSockets.Add(socket);
-                };
-                socket.OnClose = () =>
-                {
-                    Console.WriteLine("Close!");
-                    allSockets.Remove(socket);
-                };
-                //socket.OnMessage = message => socket.Send(message);
-            });
-
+                    o.ListenAnyIP(Options.ServerPort);
+                })
+                .UseStartup<Startup>()
+                .Build();
+            webHost.RunAsync();
 
             hook = new KeyboardHook();
-            hook.KeyPressed += new EventHandler<KeyPressedEventArgs>(hook_KeyPressed);
+            hook.KeyPressed += async (s, e) =>
+            {
+                await WebSocketManager.Instance.Send("Key pressed");
+                if (Options.IsHttpSender)
+                {
+                    try
+                    {
+                        await httpClient.PostAsync(Options.ClientAddress, new StringContent("aa"));
+                    }
+                    catch (Exception)
+                    {
+                        // TODO: Maybe dialog with error.
+                    }
+                }
+            };
             hook.RegisterHotKey(HotKeyMapper.ModifierKeys.Alt, Keys.X);
 
             trayMenu = new ContextMenu();
-            trayMenu.MenuItems.Add("Exit", OnExit);
+            //trayMenu.MenuItems.Add("Options", (s, e) => options.Show());
+            trayMenu.MenuItems.Add("Exit", (s, e) => Application.Exit());
 
             trayIcon = new NotifyIcon();
             trayIcon.Text = "PlayPauser";
@@ -59,24 +87,11 @@ namespace PlayPauser
             trayIcon.Visible = true;
         }
 
-        void hook_KeyPressed(object sender, KeyPressedEventArgs e)
-        {
-            foreach (var socket in allSockets)
-            {
-                socket.Send("Key pressed");
-            }
-        }
-
         protected override void OnLoad(EventArgs e)
         {
             Visible = false;
             ShowInTaskbar = false;
             base.OnLoad(e);
-        }
-
-        private void OnExit(object sender, EventArgs e)
-        {
-            Application.Exit();
         }
 
         protected override void Dispose(bool isDisposing)
@@ -85,7 +100,7 @@ namespace PlayPauser
             {
                 trayIcon.Dispose();
                 hook.Dispose();
-                server.Dispose();
+                webHost.StopAsync().Wait(); // TODO: Integrate the web host somehow nicely.
             }
 
             base.Dispose(isDisposing);
