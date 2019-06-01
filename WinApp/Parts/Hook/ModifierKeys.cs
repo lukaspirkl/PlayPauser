@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace HotKeyMapper
+namespace PlayPauser.Parts.Hook
 {
     /// <summary>
     /// The enumeration of possible modifiers.

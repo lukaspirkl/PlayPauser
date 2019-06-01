@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
-namespace HotKeyMapper
+namespace PlayPauser.Parts.Hook
 {
     public sealed class KeyboardHook : IDisposable
     {
