@@ -2,6 +2,7 @@
 using PlayPauser.Messages;
 using PlayPauser.Parts;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
@@ -11,6 +12,19 @@ namespace PlayPauser
     [System.ComponentModel.DesignerCategory("")] // Disable Visual Studio form designer
     public partial class App : Form
     {
+        private delegate void SafeCallDelegate(IconColor iconColor);
+
+        private enum IconColor
+        {
+            White,
+            Blue,
+            Green
+        }
+
+        private Dictionary<IconColor, Icon> icons;
+
+        Timer iconTimer = new Timer();
+
         private IPart[] parts;
 
         private NotifyIcon trayIcon;
@@ -23,6 +37,13 @@ namespace PlayPauser
         public App()
         {
             var eventAggregator = new EventAggregator();
+
+            icons = new Dictionary<IconColor, Icon>
+            {
+                { IconColor.White, new Icon(GetType().Assembly.GetManifestResourceStream("PlayPauser.Icons.White.ico")) },
+                { IconColor.Green, new Icon(GetType().Assembly.GetManifestResourceStream("PlayPauser.Icons.Green.ico")) },
+                { IconColor.Blue, new Icon(GetType().Assembly.GetManifestResourceStream("PlayPauser.Icons.Blue.ico")) },
+            };
 
             parts = new IPart[]
             {
@@ -38,40 +59,41 @@ namespace PlayPauser
                 part.Start(Options);
             }
 
-            var whiteIcon = new Icon(GetType().Assembly.GetManifestResourceStream("PlayPauser.Icons.White.ico"));
-            var blueIcon = new Icon(GetType().Assembly.GetManifestResourceStream("PlayPauser.Icons.Blue.ico"));
-            var greenIcon = new Icon(GetType().Assembly.GetManifestResourceStream("PlayPauser.Icons.Green.ico"));
-
             trayMenu = new ContextMenu();
             //trayMenu.MenuItems.Add("Options", (s, e) => options.Show());
             trayMenu.MenuItems.Add("Exit", (s, e) => Application.Exit());
 
             trayIcon = new NotifyIcon();
             trayIcon.Text = "PlayPauser";
-            trayIcon.Icon = whiteIcon;
 
-            var timer = new Timer();
-            timer.Interval = 500;
-            timer.Tick += (s, a) =>
+            SetIcon(IconColor.White);
+
+            
+            iconTimer.Interval = 500;
+            iconTimer.Tick += (s, a) =>
             {
-                trayIcon.Icon = whiteIcon;
-                timer.Stop();
+                trayIcon.Icon = icons[IconColor.White];
+                iconTimer.Stop();
             };
 
             eventAggregator.Subscribe<KeyPressed>(m =>
             {
-                trayIcon.Icon = greenIcon;
-                timer.Start();
+                Invoke(new SafeCallDelegate(SetIcon), IconColor.Green);
             });
 
             eventAggregator.Subscribe<HttpPostReceived>(m =>
             {
-                trayIcon.Icon = blueIcon;
-                timer.Start();
+                Invoke(new SafeCallDelegate(SetIcon), IconColor.Blue);
             });
 
             trayIcon.ContextMenu = trayMenu;
             trayIcon.Visible = true;
+        }
+
+        private void SetIcon(IconColor iconColor)
+        {
+            trayIcon.Icon = icons[iconColor];
+            iconTimer.Start();
         }
 
         protected override void OnLoad(EventArgs e)
