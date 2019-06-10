@@ -7,6 +7,10 @@
         {
             "matches": ["https://play.pocketcasts.com/*"],
             "js": ["pocketcast.js"]
+        },
+        {
+            "matches": ["https://open.spotify.com/*"],
+            "js": ["spotify.js"]
         }
     ],
     "options_page": "options.html",
