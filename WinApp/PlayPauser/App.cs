@@ -47,10 +47,10 @@ namespace PlayPauser
 
             parts = new IPart[]
             {
+                new NoSleepPart(),
                 new AspNetPart(eventAggregator),
                 new HttpSendPart(eventAggregator),
-                new KeyboardHookPart(eventAggregator),
-                new NoSleepPart()
+                new KeyboardHookPart(eventAggregator)
             };
 
             Options = JsonConvert.DeserializeObject<Options>(File.ReadAllText(Path.Combine(Path.GetDirectoryName(typeof(App).Assembly.Location), "PlayPauser.json")));

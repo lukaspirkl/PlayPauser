@@ -16,7 +16,7 @@ namespace PlayPauser.Parts.AspNet
 
             app.UseMiddleware<WebSocketHandler>();
 
-            if (App.Options.IsHttpReveiver)
+            if (App.Options.IsHttpReceiver)
             {
                 app.UseMiddleware<RequestHandler>();
             }
