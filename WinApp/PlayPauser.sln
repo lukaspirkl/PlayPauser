@@ -1,9 +1,14 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.572
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29009.5
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayPauser", "PlayPauser.csproj", "{6D098ADD-DE4D-4C3D-BC13-801500EDA3FE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayPauser", "PlayPauser\PlayPauser.csproj", "{6D098ADD-DE4D-4C3D-BC13-801500EDA3FE}"
+	ProjectSection(ProjectDependencies) = postProject
+		{30268B2C-30D1-4507-988B-B0AACD3CCB10} = {30268B2C-30D1-4507-988B-B0AACD3CCB10}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NoSleep", "NoSleep\NoSleep.csproj", "{30268B2C-30D1-4507-988B-B0AACD3CCB10}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +20,10 @@ Global
 		{6D098ADD-DE4D-4C3D-BC13-801500EDA3FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6D098ADD-DE4D-4C3D-BC13-801500EDA3FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6D098ADD-DE4D-4C3D-BC13-801500EDA3FE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{30268B2C-30D1-4507-988B-B0AACD3CCB10}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{30268B2C-30D1-4507-988B-B0AACD3CCB10}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{30268B2C-30D1-4507-988B-B0AACD3CCB10}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{30268B2C-30D1-4507-988B-B0AACD3CCB10}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

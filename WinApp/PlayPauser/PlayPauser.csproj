@@ -232,6 +232,9 @@
     <EmbeddedResource Include="OptionsForm.resx">
       <DependentUpon>OptionsForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="..\NoSleep\bin\$(Configuration)\NoSleep.exe">
+      <LogicalName>NoSleep.exe</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <Content Include="FodyWeavers.xml" />
