@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace PlayPauser.Parts
@@ -17,14 +18,20 @@ namespace PlayPauser.Parts
             EsSystemRequired = 0x00000001
         }
 
+        private Process p;
+
         public void Start(Options options)
         {
-            SetThreadExecutionState(ExecutionState.EsContinuous | ExecutionState.EsSystemRequired);
+            p = Process.Start(new ProcessStartInfo
+            {
+                FileName = "NoSleep.exe",
+                WindowStyle = ProcessWindowStyle.Hidden
+            });
         }
 
         public void Stop()
         {
-            SetThreadExecutionState(ExecutionState.EsContinuous);
+            p.Kill();
         }
     }
 }
